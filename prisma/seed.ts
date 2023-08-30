@@ -53,25 +53,25 @@ const booksData = [
 const customers = [
   {
     name: 'Hamza Ashfaq',
-    email: 'hamzaashfaq7866@example.com',
+    email: 'user@gmail.com',
     points: 100,
     password: '',
   },
   {
     name: 'Azeem',
-    email: 'azeem@example.com',
+    email: 'user2@gmail.com',
     points: 100,
     password: '',
   },
 ];
 
-// async function seedBooks() {
-//   for (const bookData of booksData) {
-//     await prisma.book.create({
-//       data: bookData,
-//     });
-//   }
-// }
+async function seedBooks() {
+  for (const bookData of booksData) {
+    await prisma.book.create({
+      data: bookData,
+    });
+  }
+}
 
 async function seedCustomers() {
   const passwordUser123 = await bcrypt.hash('user@123', roundsOfHashing);
@@ -83,13 +83,23 @@ async function seedCustomers() {
   }
 }
 
-// execute the main function
-seedCustomers()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    // close Prisma Client at the end
+async function main() {
+  try {
+    // Check if customers table is empty
+    const customerCount = await prisma.customer.count();
+    const booksCount = await prisma.book.count();
+    if (customerCount === 0 && booksCount === 0) {
+      await seedBooks();
+      await seedCustomers();
+      console.log('Customers & Books table seeded.');
+    } else {
+      console.log('Customers table already populated. Skipping seeding.');
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
     await prisma.$disconnect();
-  });
+  }
+}
+
+main();
